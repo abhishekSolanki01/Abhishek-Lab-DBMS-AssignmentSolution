@@ -179,10 +179,54 @@ inner join CATEGORY C ON pd.CAT_ID = c.CAT_ID
 having min(o.ORD_AMOUNT);
 
 -- 7)	Display the Id and Name of the Product ordered after “2021-10-05”.
--- 8)	Print the top 3 supplier name and id and their rating on the basis of their rating along with the customer name who has given the rating.
+
+select p.PRO_ID, p.PRO_NAME
+from ORDERS o inner join PRODUCT_DETAILS pd ON o.PROD_ID=pd.PROD_ID  
+inner join PRODUCT p ON pd.PRO_ID=p.PRO_ID
+where o.ORD_DATE>'2021-10-05';
+
+-- 8)	Print the top 3 supplier name and id and their rating on the basis of 
+--their rating along with the customer name who has given the rating.
+SELECT s.SUPP_NAME, s.SUPP_ID, r.RAT_RATSTARS
+from CUSTOMER c 
+inner join RATING r on c.CUS_ID=r.CUS_ID
+inner join SUPPLIER s on r.SUPP_ID = s.SUPP_ID
+order by r.RAT_RATSTARS des limit 3;
+
+
 -- 9)	Display customer name and gender whose names start or end with character 'A'.
+select c.CUS_NAME, c.CUS_GENDER 
+from CUSTOMER c
+where c.CUS_NAME like '%A' or c.CUS_NAME like 'A%';
+
 -- 10)	Display the total order amount of the male customers.
+select sum(o.ORD_AMOUNT)
+from CUSTOMER c 
+inner join ORDER o ON c.CUS_ID=o.CUS_ID
+where  CUS_GENDER = 'M';
+
 -- 11)	Display all the Customers left outer join with  the orders.
--- 12)	 Create a stored procedure to display the Rating for a Supplier if any along with the Verdict on that rating if any like if rating >4 then “Genuine Supplier” if rating >2 “Average Supplier” else “Supplier should not be considered”.
+select c.*
+from CUSTOMER c 
+left join ORDER o ON c.CUS_ID = o.CUS_ID
+
+-- 12)	 Create a stored procedure to display the Rating for a Supplier if any 
+--along with the Verdict on that rating if any like if rating >4 then “Genuine Supplier” if rating >2 
+--“Average Supplier” else “Supplier should not be considered”.
+
+delimiter &&
+create procedure proc()
+begin
+select s.SUPP_ID,s.SUPP_NAME, r.RAT_RATSTARS,
+case 
+when r.RAT_RATSTARS>4 then 'Genuine Supplier'
+when r.RAT_RATSTARS>2 then 'Average Supplier'
+else 'Supplier should not be considered'
+end as Verdict
+from SUPPLIER s
+inner join RATING r ON s.SUPP_ID=r.SUPP_ID
+end &&
+
+call proc();
 
 
